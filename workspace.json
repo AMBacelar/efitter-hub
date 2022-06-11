@@ -1,0 +1,9 @@
+{
+  "$schema": "./node_modules/nx/schemas/workspace-schema.json",
+  "version": 2,
+  "projects": {
+    "gmail": "libs/gmail",
+    "simple-scraper": "apps/simple-scraper",
+    "simple-scraper-e2e": "apps/simple-scraper-e2e"
+  }
+}

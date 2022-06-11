@@ -1,0 +1,25 @@
+{
+  "$schema": "..\\..\\node_modules\\nx\\schemas\\project-schema.json",
+  "sourceRoot": "libs/gmail/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/gmail",
+        "main": "libs/gmail/src/index.js",
+        "tsConfig": "libs/gmail/tsconfig.lib.json",
+        "assets": ["libs/gmail/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/gmail/**/*.js"]
+      }
+    }
+  },
+  "tags": []
+}
