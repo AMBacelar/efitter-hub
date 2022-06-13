@@ -87,6 +87,7 @@ const MailItem = ({ mailItem, fluid }) => {
 
   if (data === undefined) {
     console.log('$$!', mailItem);
+    return null;
   }
 
   if (data) {
