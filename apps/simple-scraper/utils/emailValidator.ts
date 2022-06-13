@@ -514,8 +514,9 @@ const parseEmailFunctions = {
       const line = lines[index];
       if (line.includes('Size:')) {
         // we found the size
+        const name = lines[index - 2]?.replace(/\*/gi, '').trim() || '';
         itemBlocks.push({
-          name: lines[index - 2].replaceAll('*', '').trim(),
+          name,
           size: line.substring(line.indexOf(':') + 1).trim(),
         });
       }
