@@ -10,6 +10,101 @@ const validAsosBrands = [
   'COLLUSION',
 ];
 
+const categories = [
+  {
+    name: 'One-pieces',
+    keywords: [
+      'boiler suit',
+      'boilersuit',
+      'dress',
+      'dungaree',
+      'gown',
+      'jumpsuit',
+      'kimono',
+      'LBD',
+      'overall',
+      'pinafore',
+      'playsuit',
+      'sundress',
+      'unitard',
+    ],
+  },
+  {
+    name: 'Outerwear',
+    keywords: [
+      'blazer',
+      'coat',
+      'fleece',
+      'gilet',
+      'hoodie',
+      'jacket',
+      'overshirt',
+      'overcoat',
+      'parka',
+      'poncho',
+      'puffer',
+      'raincoat',
+      'shacket',
+      'waistcoat',
+      'trench',
+    ],
+  },
+  {
+    name: 'Tops',
+    keywords: [
+      'blouse',
+      'bodice',
+      'body',
+      'bodysuit',
+      'camisole',
+      'cardigan',
+      'chemise',
+      'corset',
+      'dashiki',
+      'jumper',
+      'leotard',
+      'polo',
+      'shirt',
+      'shirtdress',
+      'sweater',
+      'sweatshirt',
+      't-shirt',
+      'top',
+      'tunic',
+      'vest',
+    ],
+  },
+  {
+    name: 'Bottoms',
+    keywords: [
+      'bell-bottom',
+      'capri',
+      'chino',
+      'culotte',
+      'flare',
+      'jean',
+      'jegging',
+      'Jodhpur',
+      'jogger',
+      'khakis',
+      'legging',
+      'miniskirt',
+      'pant',
+      'sarong',
+      'short',
+      'skirt',
+      'skort',
+      'sport tight',
+      'sports tight',
+      'sweatpant',
+      'tracksuit',
+      'trouser',
+      'trunks',
+      'tutu',
+    ],
+  },
+] as const;
+
 export const brands = {
   arket: 'ARKET',
   asos: 'ASOS',
@@ -69,13 +164,74 @@ type Item = {
 };
 
 const parseEmailFunctions = {
-  [brands.arket]: (body) => [],
-  [brands.asos]: (body) => [],
-  [brands.bershka]: (body) => [],
-  [brands.boohoo]: (body) => [],
-  [brands.hm]: (body) => [],
-  [brands.houseOfCB]: (body) => [],
-  [brands.iSawItFirst]: (body) => [],
+  [brands.arket]: (body): Item[] => [],
+  [brands.asos]: (body): Item[] => [],
+  [brands.bershka]: (body): Item[] => [],
+  [brands.boohoo]: (body): Item[] => [],
+  [brands.hm]: (body): Item[] => [],
+  [brands.houseOfCB]: (body): Item[] => [],
+  [brands.iSawItFirst]: (body): Item[] => {
+    const items = [];
+    let formattedLines = body.replace(/<\/?[^>]+>/gi, ' ').trim();
+    formattedLines = formattedLines.substring(
+      formattedLines.lastIndexOf('ORDER DETAILS' + 13),
+      formattedLines.lastIndexOf('Subtotal')
+    );
+
+    formattedLines = formattedLines.split('Quantity:');
+
+    formattedLines.forEach((itemBlock) => {
+      let name = null;
+      let size = null;
+      let lines = itemBlock.split(/\n/g);
+      lines = lines.reduce((lines, line) => {
+        if (line.trim() !== '') {
+          lines.push(line.trim());
+        }
+        return lines;
+      }, []);
+
+      // get name
+
+      for (let index = 0; index < lines.length; index++) {
+        const potentialItemName = lines[index];
+        for (const category in categories) {
+          if (Object.hasOwnProperty.call(categories, category)) {
+            const clothingCategory = categories[category];
+            for (const keyword in clothingCategory.keywords) {
+              if (
+                Object.hasOwnProperty.call(clothingCategory.keywords, keyword)
+              ) {
+                const key = clothingCategory.keywords[keyword];
+                if (
+                  potentialItemName.toLowerCase().includes(key.toLowerCase())
+                ) {
+                  name = potentialItemName;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // get size
+      size = lines.filter((line) => line.includes('Size:'));
+      if (size.length > 0) {
+        size = size[0].replace('Size:', '').trim();
+      } else {
+        size = null;
+      }
+      if (!!size && !!name) {
+        items.push({
+          name,
+          size,
+          brandName: brands.iSawItFirst,
+        });
+      }
+    });
+
+    return items;
+  },
   [brands.mango]: (body): Item[] => {
     const items = [];
     let array = body
@@ -103,18 +259,62 @@ const parseEmailFunctions = {
     }
     return items;
   },
-  [brands.massimoDutti]: (body) => [],
-  [brands.missguided]: (body) => [],
-  [brands.monki]: (body) => [],
-  [brands.ms]: (body) => [],
-  [brands.nakd]: (body) => [],
-  [brands.next]: (body) => [],
-  [brands.otherStories]: (body) => [],
-  [brands.plt]: (body) => [],
-  [brands.pullBear]: (body) => [],
-  [brands.stradivarius]: (body) => [],
-  [brands.uniqlo]: (body) => [],
-  [brands.zara]: (body) => [],
+  [brands.massimoDutti]: (body): Item[] => [],
+  [brands.missguided]: (body): Item[] => {
+    const items = [];
+    let lines = body
+      .substring(
+        body.search(/Item\s+Description\s+Price/),
+        body.lastIndexOf('Subtotal')
+      )
+      .split(/\n|\r/g);
+
+    lines = lines.reduce((lines, line) => {
+      if (line.trim() !== '') {
+        lines.push(line.trim());
+      }
+      return lines;
+    }, []);
+
+    for (let i = 0; i < lines.length; i++) {
+      let name = '';
+      if (lines[i].includes('Size: ')) {
+        let steps = 1;
+        while (name === '') {
+          if (lines[i - steps]) {
+            if (lines[i - steps].match(/Item\s+Description\s+Price/)) {
+              name = lines
+                .slice(i - steps, i)
+                .toString()
+                .replace(/,/g, ' ');
+              name = name.substring(name.lastIndexOf('Price') + 5).trim();
+            } else {
+              steps++;
+            }
+          } else {
+            name = null;
+            break;
+          }
+        }
+        items.push({
+          name,
+          size: lines[i].split('Size: ')[1].split(',')[0],
+          brandName: brands.missguided,
+        });
+      }
+    }
+    return items;
+  },
+  [brands.monki]: (body): Item[] => [],
+  [brands.ms]: (body): Item[] => [],
+  [brands.nakd]: (body): Item[] => [],
+  [brands.next]: (body): Item[] => [],
+  [brands.otherStories]: (body): Item[] => [],
+  [brands.plt]: (body): Item[] => [],
+  [brands.pullBear]: (body): Item[] => [],
+  [brands.stradivarius]: (body): Item[] => [],
+  [brands.uniqlo]: (body): Item[] => [],
+  [brands.zara]: (body): Item[] => [],
 };
 
 export const fetchItems = (body: string, brand: BrandValue) =>
