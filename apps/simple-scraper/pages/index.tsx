@@ -49,8 +49,10 @@ const ItemInfo = ({
       name = 'Name not Found';
     }
 
+    const isErrorPresent = !validName || sizeError || !brand;
+
     return (
-      <Segment key={i}>
+      <Segment color={isErrorPresent ? 'red' : 'green'} key={i}>
         <div className={!validName && styles['error-message']}>{`${name} ${
           category && `[${category}]`
         }`}</div>
