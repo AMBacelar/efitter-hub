@@ -1,42 +1,139 @@
-/**
- * email from made up brand 
- *  false, []
- * 
- * email from multi-brand stores
- *  missing bra
- */
+const validAsosBrands = [
+  'ASOS',
+  'ASOS DESIGN',
+  'ASOS EDITION',
+  'ASOS WHITE',
+  'ASOS MADE IN',
+  'ASOS 4505',
+  'ASOS LUXE',
+  'Reclaimed Vintage',
+  'COLLUSION',
+];
 
 export const brands = {
-  asos: "ASOS",
-  bershka: "Bershka",
-  boohoo: "Boohoo",
-  hm: "H&M",
-  iSawItFirst: "I Saw It First",
-  mango: "Mango",
-  missguided: "Missguided",
-  monki: "Monki",
-  nakd: "NA-KD",
-  next: "Next",
-  otherStories: "OtherStories",
-  plt: "PrettyLittleThing",
-  pullBear: "Pull&Bear",
-  uniqlo: "Uniqlo",
-  zara: "Zara",
-  stradivarius: "Stradivarius",
-  massimoDutti: "Massimo Dutti",
-  houseOfCB: "House of CB",
-  ms: "M&S",
-}
+  arket: 'ARKET',
+  asos: 'ASOS',
+  bershka: 'Bershka',
+  boohoo: 'Boohoo',
+  hm: 'H&M',
+  houseOfCB: 'House of CB',
+  iSawItFirst: 'I Saw It First',
+  mango: 'Mango',
+  massimoDutti: 'Massimo Dutti',
+  missguided: 'Missguided',
+  monki: 'Monki',
+  ms: 'M&S',
+  nakd: 'NA-KD',
+  next: 'Next',
+  otherStories: 'OtherStories',
+  plt: 'PrettyLittleThing',
+  pullBear: 'Pull&Bear',
+  stradivarius: 'Stradivarius',
+  uniqlo: 'Uniqlo',
+  zara: 'Zara',
+} as const;
+type BrandKey = keyof typeof brands;
+type BrandValue = typeof brands[BrandKey];
+
+const findBrand = (stringContainingBrand) => {
+  let itemBrand;
+  const brandList = Object.keys(brands).reduce(function (r, k) {
+    return r.concat(brands[k]);
+  }, []);
+
+  // asos test
+  for (let i = 0; i < validAsosBrands.length; i++) {
+    const asosBrand = validAsosBrands[i];
+    if (stringContainingBrand.toLowerCase().includes(asosBrand.toLowerCase())) {
+      itemBrand = brands.asos;
+      return itemBrand;
+    }
+  }
+
+  for (let i = 0; i < brandList.length; i++) {
+    const viableBrand = brandList[i];
+    if (
+      stringContainingBrand.toLowerCase().includes(viableBrand.toLowerCase())
+    ) {
+      itemBrand = viableBrand;
+      return itemBrand;
+    }
+  }
+  return;
+};
+
+type Item = {
+  name: string;
+  brand: BrandValue;
+  size: string;
+};
+
+const parseEmailFunctions = {
+  [brands.arket]: (body) => [],
+  [brands.asos]: (body) => [],
+  [brands.bershka]: (body) => [],
+  [brands.boohoo]: (body) => [],
+  [brands.hm]: (body) => [],
+  [brands.houseOfCB]: (body) => [],
+  [brands.iSawItFirst]: (body) => [],
+  [brands.mango]: (body): Item[] => {
+    const items = [];
+    let array = body
+      .substring(body.lastIndexOf('Order number'), body.lastIndexOf('Subtotal'))
+      .split('\n');
+
+    array = array.reduce((array, line) => {
+      if (line.replace(/<\/?[^>]+>/gi, ' ').trim() !== '') {
+        array.push(line.replace(/<\/?[^>]+>/gi, ' ').trim());
+      }
+      return array;
+    }, []);
+
+    for (let i = 0; i < array.length; i++) {
+      const line = array[i];
+      if (line.includes('Size')) {
+        let size = line.replace('Size', '');
+        if (size.includes('Color')) size = size.replace('Color', '');
+        items.push({
+          name: array[i - 2].trim(),
+          size: size.trim(),
+          brandName: brands.mango,
+        });
+      }
+    }
+    return items;
+  },
+  [brands.massimoDutti]: (body) => [],
+  [brands.missguided]: (body) => [],
+  [brands.monki]: (body) => [],
+  [brands.ms]: (body) => [],
+  [brands.nakd]: (body) => [],
+  [brands.next]: (body) => [],
+  [brands.otherStories]: (body) => [],
+  [brands.plt]: (body) => [],
+  [brands.pullBear]: (body) => [],
+  [brands.stradivarius]: (body) => [],
+  [brands.uniqlo]: (body) => [],
+  [brands.zara]: (body) => [],
+};
+
+export const fetchItems = (body: string, brand: BrandValue) =>
+  parseEmailFunctions[brand](body);
 
 export const emailValidator = (messageBody, subject) => {
   const brandName = findBrandName(messageBody, subject);
   const isValidSubjectLine = !!brandName;
 
+  if (brandName === '') {
+    return { isValidSubjectLine, items: [] };
+  }
+
+  const items = fetchItems(messageBody, brandName);
   return {
     isValidSubjectLine,
-    items: []
+    items,
   };
-}
+};
 
 const findBrandName = (messageBody: string, subject: string) => {
   if (subject === undefined) return '';
@@ -92,6 +189,11 @@ const findBrandName = (messageBody: string, subject: string) => {
     } else if (subject.toLowerCase().includes('HouseofCB'.toLowerCase())) {
       // House of CB
       return brands.houseOfCB;
+    } else if (
+      messageBody.toLowerCase().includes('for more information about arket')
+    ) {
+      // Arket
+      return brands.arket;
     } else {
       //H&M
       return brands.hm;
@@ -143,4 +245,4 @@ const findBrandName = (messageBody: string, subject: string) => {
     return brands.ms;
   }
   return '';
-}
+};

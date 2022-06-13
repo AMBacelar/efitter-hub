@@ -59,6 +59,10 @@ const MailItem = ({ mailItem, fluid }) => {
 
   if (!isValidSubjectLine) return null;
 
+  if (items.length) {
+    console.log(items);
+  }
+
   return (
     <Card fluid={fluid}>
       <Card.Content>
@@ -66,7 +70,7 @@ const MailItem = ({ mailItem, fluid }) => {
         <Card.Header>{subject}</Card.Header>
         <Card.Description>{from}</Card.Description>
         <Card.Content extra>
-          snippet: {mailItem.snippet || 'no snippet'}
+          {items.length ? `items: ${items.length}` : 'no items found'}
         </Card.Content>
       </Card.Content>
     </Card>
