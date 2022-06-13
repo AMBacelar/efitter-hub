@@ -104,7 +104,16 @@ const MailItem = ({ mailItem, fluid }) => {
     (x) => x.name == 'Date' || x.name == 'date'
   )[0]?.value;
 
-  const { isValidSubjectLine, items } = emailValidator(messageBody, subject);
+  let isValidSubjectLine, items;
+
+  try {
+    const product = emailValidator(messageBody, subject);
+    isValidSubjectLine = product.isValidSubjectLine;
+    items = product.items;
+  } catch (error) {
+    isValidSubjectLine = false;
+    items = [];
+  }
 
   if (!isValidSubjectLine) return null;
 
