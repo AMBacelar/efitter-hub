@@ -1,161 +1,6 @@
-const validAsosBrands = [
-  'ASOS',
-  'ASOS DESIGN',
-  'ASOS EDITION',
-  'ASOS WHITE',
-  'ASOS MADE IN',
-  'ASOS 4505',
-  'ASOS LUXE',
-  'Reclaimed Vintage',
-  'COLLUSION',
-];
-
-const categories = [
-  {
-    name: 'One-pieces',
-    keywords: [
-      'boiler suit',
-      'boilersuit',
-      'dress',
-      'dungaree',
-      'gown',
-      'jumpsuit',
-      'kimono',
-      'LBD',
-      'overall',
-      'pinafore',
-      'playsuit',
-      'sundress',
-      'unitard',
-    ],
-  },
-  {
-    name: 'Outerwear',
-    keywords: [
-      'blazer',
-      'coat',
-      'fleece',
-      'gilet',
-      'hoodie',
-      'jacket',
-      'overshirt',
-      'overcoat',
-      'parka',
-      'poncho',
-      'puffer',
-      'raincoat',
-      'shacket',
-      'waistcoat',
-      'trench',
-    ],
-  },
-  {
-    name: 'Tops',
-    keywords: [
-      'blouse',
-      'bodice',
-      'body',
-      'bodysuit',
-      'camisole',
-      'cardigan',
-      'chemise',
-      'corset',
-      'dashiki',
-      'jumper',
-      'leotard',
-      'polo',
-      'shirt',
-      'shirtdress',
-      'sweater',
-      'sweatshirt',
-      't-shirt',
-      'top',
-      'tunic',
-      'vest',
-    ],
-  },
-  {
-    name: 'Bottoms',
-    keywords: [
-      'bell-bottom',
-      'capri',
-      'chino',
-      'culotte',
-      'flare',
-      'jean',
-      'jegging',
-      'Jodhpur',
-      'jogger',
-      'khakis',
-      'legging',
-      'miniskirt',
-      'pant',
-      'sarong',
-      'short',
-      'skirt',
-      'skort',
-      'sport tight',
-      'sports tight',
-      'sweatpant',
-      'tracksuit',
-      'trouser',
-      'trunks',
-      'tutu',
-    ],
-  },
-] as const;
-
-export const brands = {
-  arket: 'ARKET',
-  asos: 'ASOS',
-  bershka: 'Bershka',
-  boohoo: 'Boohoo',
-  hm: 'H&M',
-  houseOfCB: 'House of CB',
-  iSawItFirst: 'I Saw It First',
-  mango: 'Mango',
-  massimoDutti: 'Massimo Dutti',
-  missguided: 'Missguided',
-  monki: 'Monki',
-  ms: 'M&S',
-  nakd: 'NA-KD',
-  next: 'Next',
-  otherStories: 'OtherStories',
-  plt: 'PrettyLittleThing',
-  pullBear: 'Pull&Bear',
-  stradivarius: 'Stradivarius',
-  uniqlo: 'Uniqlo',
-  zara: 'Zara',
-} as const;
-type BrandKey = keyof typeof brands;
-type BrandValue = typeof brands[BrandKey];
-
-const findBrand = (stringContainingBrand) => {
-  let itemBrand;
-  const brandList = Object.keys(brands).reduce(function (r, k) {
-    return r.concat(brands[k]);
-  }, []);
-
-  // asos test
-  for (let i = 0; i < validAsosBrands.length; i++) {
-    const asosBrand = validAsosBrands[i];
-    if (stringContainingBrand.toLowerCase().includes(asosBrand.toLowerCase())) {
-      itemBrand = brands.asos;
-      return itemBrand;
-    }
-  }
-
-  for (let i = 0; i < brandList.length; i++) {
-    const viableBrand = brandList[i];
-    if (
-      stringContainingBrand.toLowerCase().includes(viableBrand.toLowerCase())
-    ) {
-      itemBrand = viableBrand;
-      return itemBrand;
-    }
-  }
-  return;
-};
+import { BrandValue, brands, findBrand } from './brands';
+import { categories, getCategory } from './categories';
+import { getLegalSizes } from './sizes';
 
 type Item = {
   name: string;
@@ -163,15 +8,247 @@ type Item = {
   size: string;
 };
 
+const htmlToText = (str: string) => str.replace(/<\/?[^>]+>/gi, ' ');
+
 const parseEmailFunctions = {
   [brands.arket]: (body): Item[] => [],
   [brands.asos]: (body): Item[] => [],
-  [brands.bershka]: (body): Item[] => [],
-  [brands.boohoo]: (body): Item[] => [],
-  [brands.hm]: (body): Item[] => [],
-  [brands.houseOfCB]: (body): Item[] => [],
+  [brands.bershka]: (body): Item[] => {
+    const items: Item[] = [];
+    let text = htmlToText(body).trim();
+    text = text.substring(
+      text.lastIndexOf('Purchase summary') + 16,
+      text.lastIndexOf('Total item price')
+    );
+
+    const formattedLines = text.split('£');
+
+    formattedLines.forEach((itemBlock) => {
+      let name = null;
+      let size = null;
+      let lines = itemBlock.split(/\n/g);
+      lines = lines.reduce((lines, line) => {
+        if (line.trim() !== '') {
+          lines.push(line.trim());
+        }
+        return lines;
+      }, []);
+
+      // get name
+
+      for (let index = 0; index < lines.length; index++) {
+        const potentialItemName = lines[index];
+        for (const category in categories) {
+          if (Object.hasOwnProperty.call(categories, category)) {
+            const clothingCategory = categories[category];
+            for (const keyword in clothingCategory.keywords) {
+              if (
+                Object.hasOwnProperty.call(clothingCategory.keywords, keyword)
+              ) {
+                const key = clothingCategory.keywords[keyword];
+                if (
+                  potentialItemName.toLowerCase().includes(key.toLowerCase())
+                ) {
+                  name = potentialItemName;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      const legalSizes = getLegalSizes(brands.bershka);
+
+      // get size
+
+      for (let index = 0; index < lines.length; index++) {
+        const potentialSize = lines[index];
+        const i = legalSizes.findIndex(
+          (legalSize) => legalSize === potentialSize
+        );
+        if (i !== -1) {
+          size = potentialSize;
+        }
+      }
+
+      items.push({
+        name,
+        size,
+        brand: brands.bershka,
+      });
+    });
+
+    return items;
+  },
+  [brands.boohoo]: (body): Item[] => {
+    const items: Item[] = [];
+    let array = htmlToText(body).replace(/>/gi, '').trim();
+
+    array = array.substring(
+      array.toLowerCase().lastIndexOf('s in the bag...') + 18,
+      array.toLowerCase().lastIndexOf('subtotal')
+    );
+
+    let lines = array.split(/\n/g);
+    lines = lines.reduce((lines, line) => {
+      if (line.trim() !== '') {
+        lines.push(line.trim());
+      }
+      return lines;
+    }, []);
+
+    let originalEmail;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.toLowerCase().includes('qty')) {
+        if (
+          line.toLowerCase().includes('qty') &&
+          line.toLowerCase().includes('size') &&
+          line.toLowerCase().includes('colour')
+        ) {
+          originalEmail = false;
+        } else {
+          originalEmail = true;
+        }
+      }
+    }
+
+    const nameStep = originalEmail ? 3 : 2;
+
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes('Size:')) {
+        const name = lines[i - nameStep];
+        const size = originalEmail
+          ? lines[i + 1]
+          : lines[i]
+              .toLowerCase()
+              .substring(
+                lines[i].toLowerCase().lastIndexOf('size:') + 5,
+                lines[i].toLowerCase().lastIndexOf('[')
+              )
+              .replace('*', '')
+              .trim();
+
+        items.push({
+          name,
+          size,
+          brand: brands.boohoo,
+        });
+      }
+    }
+
+    return items;
+  },
+  [brands.hm]: (body): Item[] => {
+    const items: Item[] = [];
+    const text = htmlToText(body).trim();
+    let lines = text
+      .substring(
+        text.toLowerCase().lastIndexOf('price after discount') + 20,
+        text.toLowerCase().lastIndexOf('products total')
+      )
+      .split('\n');
+    lines = lines.reduce((lines, line) => {
+      if (line.trim() !== '') {
+        lines.push(line.trim());
+      }
+      return lines;
+    }, []);
+
+    let originalEmail;
+
+    if (lines.length) {
+      const searchForPattern = lines[0].search(/\d{5,}\s\w+/gm) !== -1;
+      if (searchForPattern) {
+        originalEmail = false;
+      } else {
+        originalEmail = true;
+      }
+    }
+
+    if (originalEmail) {
+      let searchingForSymbol = true;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (searchingForSymbol) {
+          if (line.includes('£')) {
+            searchingForSymbol = false;
+            items.push({
+              name: lines[i - 4],
+              size: lines[i - 3],
+              brand: brands.hm,
+            });
+          }
+        } else {
+          if (!line.includes('£')) {
+            searchingForSymbol = true;
+          }
+        }
+      }
+    } else {
+      for (let i = 0; i < lines.length; i++) {
+        const item = lines[i].split(' ');
+        const legalSizes = getLegalSizes(brands.hm);
+        for (let j = 0; j < item.length; j++) {
+          const text = item[j];
+          const index = legalSizes.indexOf(text);
+          if (index !== -1) {
+            items.push({
+              name: item.slice(1, j).toString().replace(/,/g, ' '),
+              size: text,
+              brand: brands.hm,
+            });
+          }
+        }
+      }
+    }
+
+    return items;
+  },
+  [brands.houseOfCB]: (body): Item[] => {
+    const items: Item[] = [];
+    const text = htmlToText(body);
+    const formattedLines = text
+      .substring(text.lastIndexOf('Qty') + 5, text.lastIndexOf('Returns'))
+      .replace(/\r/g, '')
+      .split(/\n/g);
+    let lines = [];
+    lines = formattedLines.reduce((lines, line) => {
+      if (line.trim() !== '') {
+        lines.push(line.trim());
+      }
+      return lines;
+    }, []);
+
+    const itemBlocks = [];
+
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index];
+      if (line.includes('Size:')) {
+        const name = `${lines[index - 2]} ${lines[index - 1]}`.trim();
+        itemBlocks.push({
+          name,
+          size: line
+            .substring(line.indexOf(':') + 1)
+            .replace('&nbsp;', '')
+            .trim(),
+        });
+      }
+    }
+
+    itemBlocks.forEach(({ name, size }) => {
+      items.push({
+        name,
+        size,
+        brand: brands.houseOfCB,
+      });
+    });
+    return items;
+  },
   [brands.iSawItFirst]: (body): Item[] => {
-    const items = [];
+    const items: Item[] = [];
     let formattedLines = body.replace(/<\/?[^>]+>/gi, ' ').trim();
     formattedLines = formattedLines.substring(
       formattedLines.lastIndexOf('ORDER DETAILS' + 13),
@@ -221,19 +298,17 @@ const parseEmailFunctions = {
       } else {
         size = null;
       }
-      if (!!size && !!name) {
-        items.push({
-          name,
-          size,
-          brandName: brands.iSawItFirst,
-        });
-      }
+      items.push({
+        name,
+        size,
+        brand: brands.iSawItFirst,
+      });
     });
 
     return items;
   },
   [brands.mango]: (body): Item[] => {
-    const items = [];
+    const items: Item[] = [];
     let array = body
       .substring(body.lastIndexOf('Order number'), body.lastIndexOf('Subtotal'))
       .split('\n');
@@ -253,15 +328,55 @@ const parseEmailFunctions = {
         items.push({
           name: array[i - 2].trim(),
           size: size.trim(),
-          brandName: brands.mango,
+          brand: brands.mango,
         });
       }
     }
     return items;
   },
-  [brands.massimoDutti]: (body): Item[] => [],
+  [brands.massimoDutti]: (body): Item[] => {
+    const items: Item[] = [];
+    let text;
+    text = htmlToText(body).trim();
+    text = text.substring(
+      text.lastIndexOf('Estimated delivery date') + 23,
+      text.lastIndexOf('Product total')
+    );
+
+    let lines = [];
+    const formattedLines = text.split(/\n/g);
+    lines = formattedLines.reduce((lines, line) => {
+      if (line.trim() !== '') {
+        lines.push(line.trim());
+      }
+      return lines;
+    }, []);
+
+    const itemBlocks = [];
+
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index];
+      if (line.includes('Size:')) {
+        // we found the size
+        itemBlocks.push({
+          name: lines[index - 1].replaceAll('*', '').trim(),
+          size: line.substring(line.indexOf(':') + 1).trim(),
+        });
+      }
+    }
+
+    itemBlocks.forEach(({ name, size }) => {
+      items.push({
+        name,
+        size,
+        brand: brands.massimoDutti,
+      });
+    });
+
+    return items;
+  },
   [brands.missguided]: (body): Item[] => {
-    const items = [];
+    const items: Item[] = [];
     let lines = body
       .substring(
         body.search(/Item\s+Description\s+Price/),
@@ -299,22 +414,495 @@ const parseEmailFunctions = {
         items.push({
           name,
           size: lines[i].split('Size: ')[1].split(',')[0],
-          brandName: brands.missguided,
+          brand: brands.missguided,
         });
       }
     }
     return items;
   },
-  [brands.monki]: (body): Item[] => [],
-  [brands.ms]: (body): Item[] => [],
-  [brands.nakd]: (body): Item[] => [],
-  [brands.next]: (body): Item[] => [],
-  [brands.otherStories]: (body): Item[] => [],
-  [brands.plt]: (body): Item[] => [],
-  [brands.pullBear]: (body): Item[] => [],
-  [brands.stradivarius]: (body): Item[] => [],
-  [brands.uniqlo]: (body): Item[] => [],
-  [brands.zara]: (body): Item[] => [],
+  [brands.monki]: (body): Item[] => {
+    const items: Item[] = [];
+    let text;
+    text = htmlToText(body).trim();
+    const columns = text.toLowerCase().includes('discount') ? 8 : 7;
+    text = text.substring(
+      text.lastIndexOf('Total price') + 11,
+      text.lastIndexOf('Products total')
+    );
+    let lines = [];
+    const formattedLines = text.split(/\n/g);
+    lines = formattedLines.reduce((lines, line) => {
+      if (line.trim() !== '') {
+        lines.push(line.trim());
+      }
+      return lines;
+    }, []);
+
+    const itemBlocks = [];
+    while (lines.length) {
+      itemBlocks.push(lines.splice(0, columns));
+    }
+
+    itemBlocks.forEach((itemBlock) => {
+      let name = null;
+      let size = null;
+      // get name
+
+      for (let index = 0; index < itemBlock.length; index++) {
+        const potentialItemName = itemBlock[index];
+        for (const category in categories) {
+          if (Object.hasOwnProperty.call(categories, category)) {
+            const clothingCategory = categories[category];
+            for (const keyword in clothingCategory.keywords) {
+              if (
+                Object.hasOwnProperty.call(clothingCategory.keywords, keyword)
+              ) {
+                const key = clothingCategory.keywords[keyword];
+                if (
+                  potentialItemName.toLowerCase().includes(key.toLowerCase())
+                ) {
+                  name = potentialItemName;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      const legalSizes = getLegalSizes(brands.monki);
+
+      for (let index = 0; index < itemBlock.length; index++) {
+        const potentialSize = itemBlock[index];
+        const i = legalSizes.findIndex(
+          (legalSize) => legalSize === potentialSize
+        );
+        if (i !== -1) {
+          size = potentialSize;
+        }
+      }
+
+      items.push({
+        name,
+        size,
+        brand: brands.monki,
+      });
+    });
+
+    return items;
+  },
+  [brands.ms]: (body): Item[] => {
+    const items: Item[] = [];
+    let text;
+    text = htmlToText(body).trim();
+    text = text.substring(
+      text.lastIndexOf('Order details') + 13,
+      text.lastIndexOf('Payment details')
+    );
+
+    let lines = [];
+    const formattedLines = text.split(/\n/g);
+    lines = formattedLines.reduce((lines, line) => {
+      if (line.trim() !== '') {
+        lines.push(line.trim());
+      }
+      return lines;
+    }, []);
+
+    const itemBlocks = [];
+
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index];
+      if (line.includes('Size:')) {
+        // we found the size
+        itemBlocks.push({
+          name: lines[index - 2].replaceAll('*', '').trim(),
+          size: line.substring(line.indexOf(':') + 1).trim(),
+        });
+      }
+    }
+
+    itemBlocks.forEach(({ name, size }) => {
+      items.push({
+        name,
+        size,
+        brand: brands.ms,
+      });
+    });
+
+    return items;
+  },
+  [brands.nakd]: (body): Item[] => {
+    const items: Item[] = [];
+    let text = htmlToText(body).trim();
+    text = text.substring(
+      text.lastIndexOf('My Order'),
+      text.lastIndexOf('Order overview')
+    );
+    const formattedLines = text.split('Quantity:');
+
+    formattedLines.forEach((itemBlock) => {
+      let name = null;
+      let size = null;
+      let lines = itemBlock.split(/\n/g);
+      lines = lines.reduce((lines, line) => {
+        if (line.trim() !== '') {
+          lines.push(line.trim());
+        }
+        return lines;
+      }, []);
+
+      // get name
+
+      for (let index = 0; index < lines.length; index++) {
+        const potentialItemName = lines[index];
+        for (const category in categories) {
+          if (Object.hasOwnProperty.call(categories, category)) {
+            const clothingCategory = categories[category];
+            for (const keyword in clothingCategory.keywords) {
+              if (
+                Object.hasOwnProperty.call(clothingCategory.keywords, keyword)
+              ) {
+                const key = clothingCategory.keywords[keyword];
+                if (
+                  potentialItemName.toLowerCase().includes(key.toLowerCase())
+                ) {
+                  name = potentialItemName;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // get size
+      size = lines.filter((line) => line.includes('Size:'));
+      if (size.length > 0) {
+        size = size[0].replace('Size:', '').trim();
+      } else {
+        size = null;
+      }
+      items.push({
+        name,
+        size,
+        brand: brands.nakd,
+      });
+    });
+    return items;
+  },
+  [brands.next]: (body): Item[] => {
+    const items = [];
+    let lines = body;
+    lines = lines
+      .substring(lines.indexOf('Description'), lines.indexOf('Total'))
+      .split('\n');
+    lines = lines.reduce((lines, line) => {
+      const a = line.replaceAll('|', '').trim();
+      if (a !== '') {
+        lines.push(a);
+      }
+      return lines;
+    }, []);
+
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index];
+      if (line.toLowerCase().includes('price')) {
+        const name = line.replace('Price', '').trim();
+        const brand = findBrand(name) || brands.next;
+        const legalSizes = getLegalSizes(brand);
+        items.push({
+          name,
+          size: lines[index + 2].trim(),
+          brand,
+        });
+      }
+    }
+    return items;
+  },
+  [brands.otherStories]: (body): Item[] => {
+    const items: Item[] = [];
+    const rawText = htmlToText(body).trim();
+    let rawLines = rawText
+      .substring(
+        rawText.lastIndexOf('Total price') + 11,
+        rawText.lastIndexOf('Products total')
+      )
+      .split(/\n/g);
+
+    rawLines = rawLines.reduce((rawLines, line) => {
+      if (line.trim() !== '') {
+        rawLines.push(line.trim());
+      }
+      return rawLines;
+    }, []);
+
+    let originalEmail;
+
+    if (rawLines.length) {
+      const searchForPattern = rawLines[0].search(/\d{5,}\s\w+/gm) !== -1;
+      if (searchForPattern) {
+        originalEmail = false;
+      } else {
+        originalEmail = true;
+      }
+    }
+
+    if (originalEmail) {
+      let searchingForSymbol = true;
+
+      for (let i = 0; i < rawLines.length; i++) {
+        const line = rawLines[i];
+        if (searchingForSymbol) {
+          if (line.includes('£')) {
+            searchingForSymbol = false;
+            items.push({
+              name: rawLines[i - 4],
+              size: rawLines[i - 3],
+              brand: brands.otherStories,
+            });
+          }
+        } else {
+          if (!line.includes('£')) {
+            searchingForSymbol = true;
+          }
+        }
+      }
+    } else {
+      for (let i = 0; i < rawLines.length; i++) {
+        const item = rawLines[i].split(' ');
+        const legalSizes = getLegalSizes(brands.otherStories);
+        for (let j = 0; j < item.length; j++) {
+          const text = item[j];
+          const index = legalSizes.indexOf(text);
+          if (index !== -1) {
+            items.push({
+              name: item.slice(1, j).toString().replace(/,/g, ' '),
+              size: text,
+              brand: brands.otherStories,
+            });
+          }
+        }
+      }
+    }
+
+    return items;
+  },
+  [brands.plt]: (body): Item[] => {
+    const items: Item[] = [];
+    const startIndex =
+      body.lastIndexOf('Price') !== -1
+        ? body.lastIndexOf('Price') + 5
+        : body.indexOf('Product   Information Price') + 27;
+    const text = body.substring(startIndex, body.lastIndexOf('Subtotal'));
+    let lines = text.split(/\n/g);
+    lines = lines.reduce((lines, line) => {
+      if (line.trim() !== '') {
+        lines.push(line.trim());
+      }
+      return lines;
+    }, []);
+
+    const itemBlocks = [];
+
+    console.log(lines);
+
+    // while (lines.length) {
+    //   console.log(lines);
+    //   itemBlocks.push(lines.slice(0, 5));
+    // }
+
+    itemBlocks.forEach((itemBlock) => {
+      let size;
+      if (itemBlock[1].includes('Size: ')) {
+        size = itemBlock[1].replace(/Size: /, '').trim();
+      }
+      const name = itemBlock[0];
+      items.push({
+        name,
+        size,
+        brand: brands.plt,
+      });
+    });
+
+    return items;
+  },
+  [brands.pullBear]: (body): Item[] => {
+    const items: Item[] = [];
+    let formattedLines = htmlToText(body).replace(/\[(.*?)\]/gi, ' ');
+    formattedLines = formattedLines.substring(
+      formattedLines.lastIndexOf('DELIVERY ADDRESS:') + 17,
+      formattedLines.lastIndexOf('PRODUCT TOTAL')
+    );
+    let lines = formattedLines.split(/\n/g).reduce((lines, line) => {
+      if (line.trim() !== '') {
+        lines.push(line.trim());
+      }
+      return lines;
+    }, []);
+
+    const startIndex = lines.findIndex((line) => getCategory(line));
+    lines = lines.filter((_, index) => index >= startIndex);
+    // chunk into 5's
+    const itemBlocks = [];
+    while (lines.length) {
+      itemBlocks.push(lines.splice(0, 5));
+    }
+
+    itemBlocks.forEach((itemBlock) => {
+      const name = itemBlock[0];
+      let size = null;
+
+      const legalSizes = getLegalSizes(brands.pullBear);
+
+      // get size
+
+      for (let index = 0; index < itemBlock.length; index++) {
+        const potentialSize = itemBlock[index];
+        const i = legalSizes.findIndex(
+          (legalSize) => legalSize === potentialSize
+        );
+        if (i !== -1) {
+          size = potentialSize;
+        }
+      }
+
+      items.push({
+        name,
+        size,
+        brand: brands.pullBear,
+      });
+    });
+
+    return items;
+  },
+  [brands.stradivarius]: (body): Item[] => {
+    const items: Item[] = [];
+    let text;
+    text = htmlToText(body).trim();
+    text = text.substring(
+      text.lastIndexOf('Date of order') + 13,
+      text.lastIndexOf('Payment method')
+    );
+
+    let lines = [];
+    const formattedLines = text.split(/\n/g);
+    lines = formattedLines.reduce((lines, line) => {
+      if (line.trim() !== '') {
+        lines.push(line.trim());
+      }
+      return lines;
+    }, []);
+
+    const itemBlocks = [];
+
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index];
+      if (line.includes(' | ')) {
+        // we found the size
+        itemBlocks.push({
+          name: lines[index - 3].trim(),
+          size: line.substring(0, line.indexOf('|')).trim(),
+        });
+      }
+    }
+
+    itemBlocks.forEach(({ name, size }) => {
+      items.push({
+        name,
+        size,
+        brand: brands.stradivarius,
+      });
+    });
+
+    return items;
+  },
+  [brands.uniqlo]: (body): Item[] => {
+    const items: Item[] = [];
+    let text = htmlToText(body).trim();
+    text = text.substring(
+      text.lastIndexOf('Order Number') + 12,
+      text.lastIndexOf('Order Details:')
+    );
+
+    const formattedLines = text.split('Item No:');
+
+    formattedLines.forEach((itemBlock) => {
+      let name = null;
+      let size = null;
+      let lines = itemBlock.split(/\n/g);
+      lines = lines.reduce((lines, line) => {
+        if (line.trim() !== '') {
+          lines.push(line.trim());
+        }
+        return lines;
+      }, []);
+
+      // get name
+
+      for (let index = 0; index < lines.length; index++) {
+        const potentialItemName = lines[index];
+        for (const category in categories) {
+          if (Object.hasOwnProperty.call(categories, category)) {
+            const clothingCategory = categories[category];
+            for (const keyword in clothingCategory.keywords) {
+              if (
+                Object.hasOwnProperty.call(clothingCategory.keywords, keyword)
+              ) {
+                const key = clothingCategory.keywords[keyword];
+                if (
+                  potentialItemName.toLowerCase().includes(key.toLowerCase())
+                ) {
+                  name = potentialItemName;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // get size
+      size = lines.filter((line) => line.includes('Size:'));
+      if (size.length > 0) {
+        size = size[0].replace('Size:', '').trim();
+      } else {
+        size = null;
+      }
+      items.push({
+        name,
+        size,
+        brand: brands.uniqlo,
+      });
+    });
+
+    return items;
+  },
+  [brands.zara]: (body): Item[] => {
+    const items: Item[] = [];
+    const legalSizes = getLegalSizes(brands.zara);
+    const text = body;
+    let lines = text
+      .substring(text.lastIndexOf('Products'), text.lastIndexOf('Payment'))
+      .split('\n');
+
+    lines = lines.reduce((lines, line) => {
+      if (line.trim() !== '') {
+        lines.push(line.trim());
+      }
+      return lines;
+    }, []);
+
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index];
+      const i = legalSizes.findIndex((legalSize) => legalSize === line);
+      if (i !== -1) {
+        items.push({
+          name: lines[index + 1].trim(),
+          size: line,
+          brand: brands.zara,
+        });
+      }
+    }
+    return items;
+  },
 };
 
 export const fetchItems = (body: string, brand: BrandValue) =>

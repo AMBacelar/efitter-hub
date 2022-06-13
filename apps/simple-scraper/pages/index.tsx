@@ -8,6 +8,9 @@ import {
 } from '@efitter-hub/gmail';
 import React, { useEffect, useState } from 'react';
 import { emailValidator } from '../utils/emailValidator';
+import { BrandValue } from '../utils/brands';
+import styles from './index.module.scss';
+import { getCategory } from '../utils/categories';
 
 const loadScript = (url, id, onLoad) => {
   const firstJs = document.getElementsByTagName('script')[0];
@@ -23,16 +26,59 @@ const loadScript = (url, id, onLoad) => {
   firstJs.parentNode.insertBefore(script, firstJs);
 };
 
+const ItemInfo = ({
+  items,
+}: {
+  items: { brand: BrandValue; name: string; size: string }[];
+}) => {
+  const itemList = items.map((item, i) => {
+    const { brand, size } = item;
+    let { name } = item;
+    let validName;
+    let category;
+    const sizeError = !size;
+
+    try {
+      category = getCategory(name);
+      if (category) {
+        validName = true;
+      }
+    } catch (error) {
+      validName = false;
+      category = '';
+      name = 'Name not Found';
+    }
+
+    return (
+      <Segment key={i}>
+        <div className={!validName && styles['error-message']}>{`${name} ${
+          category && `[${category}]`
+        }`}</div>
+        <div className={brand ? '' : styles['error-message']}>{brand}</div>
+        <div className={sizeError && styles['error-message']}>
+          {size || 'Valid size not found'}
+        </div>
+      </Segment>
+    );
+  });
+  return (
+    <div>
+      <p className={items.length === 0 && styles['error-message']}>
+        {items.length ? `items: ${items.length}` : 'no items found'}
+      </p>
+      <div>{itemList}</div>
+    </div>
+  );
+};
+
 const MailItem = ({ mailItem, fluid }) => {
   // TO GET MESSAGE BODY
-
   const getBody = (misc) => {
     if (misc.parts) {
       return getBody(misc.parts[0]);
     }
     return misc.body.data;
   };
-
   const data = getBody(mailItem.payload);
 
   let messageBody;
@@ -59,10 +105,6 @@ const MailItem = ({ mailItem, fluid }) => {
 
   if (!isValidSubjectLine) return null;
 
-  if (items.length) {
-    console.log(items);
-  }
-
   return (
     <Card fluid={fluid}>
       <Card.Content>
@@ -70,7 +112,7 @@ const MailItem = ({ mailItem, fluid }) => {
         <Card.Header>{subject}</Card.Header>
         <Card.Description>{from}</Card.Description>
         <Card.Content extra>
-          {items.length ? `items: ${items.length}` : 'no items found'}
+          <ItemInfo items={items} />
         </Card.Content>
       </Card.Content>
     </Card>
