@@ -7,6 +7,7 @@ import {
   handleSignoutClick,
 } from '@efitter-hub/gmail';
 import React, { useEffect, useState } from 'react';
+import ReactModal from 'react-modal';
 import { emailValidator } from '../utils/emailValidator';
 import { BrandValue } from '../utils/brands';
 import styles from './index.module.scss';
@@ -73,7 +74,7 @@ const ItemInfo = ({
   );
 };
 
-const MailItem = ({ mailItem, fluid }) => {
+const MailItem = ({ mailItem, fluid, onClick }) => {
   // TO GET MESSAGE BODY
   const getBody = (misc) => {
     if (misc.parts) {
@@ -117,8 +118,10 @@ const MailItem = ({ mailItem, fluid }) => {
 
   if (!isValidSubjectLine) return null;
 
+  const handleClick = () => onClick(messageBody);
+
   return (
-    <Card fluid={fluid}>
+    <Card onClick={handleClick} fluid={fluid}>
       <Card.Content>
         <Card.Meta>{date}</Card.Meta>
         <Card.Header>{subject}</Card.Header>
@@ -137,6 +140,8 @@ export function Index() {
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState([]);
   const [maxWidth, setMaxWidth] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentMessageBody, setCurrentMessageBody] = useState();
 
   useEffect(() => {
     loadScript('https://apis.google.com/js/api.js', 'api', () => gapiLoaded());
@@ -230,8 +235,27 @@ export function Index() {
     });
   };
 
+  const handleOpenModal = (data) => {
+    const temp = document.createElement('div');
+    temp.innerHTML = data;
+    let sanitized = temp.textContent || temp.innerText;
+    const index = sanitized.indexOf('}}') + 2;
+    if (index !== -1) {
+      sanitized = sanitized.slice(index);
+    }
+    setCurrentMessageBody(sanitized);
+    setIsModalOpen(true);
+  };
+
   const messageList = messages.map((message) => {
-    return <MailItem key={message.id} mailItem={message} fluid={maxWidth} />;
+    return (
+      <MailItem
+        key={message.id}
+        mailItem={message}
+        fluid={maxWidth}
+        onClick={handleOpenModal}
+      />
+    );
   });
 
   return (
@@ -300,6 +324,20 @@ export function Index() {
         )}
         <Card.Group centered>{messageList}</Card.Group>
       </Dimmer.Dimmable>
+
+      <ReactModal
+        isOpen={isModalOpen}
+        shouldFocusAfterRender={true}
+        shouldCloseOnOverlayClick={true}
+        shouldCloseOnEsc={true}
+        shouldReturnFocusAfterClose={true}
+        preventScroll={false}
+        parentSelector={() => document.body}
+        onRequestClose={() => setIsModalOpen(false)}
+      >
+        <h2>Modal Content</h2>
+        <p>{currentMessageBody}</p>
+      </ReactModal>
     </Container>
   );
 }
