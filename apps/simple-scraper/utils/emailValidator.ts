@@ -8,11 +8,51 @@ type Item = {
   size: string;
 };
 
-const htmlToText = (str: string) => str.replace(/<\/?[^>]+>/gi, ' ');
+// const htmlToText = (str: string) => str.replace(/<\/?[^>]+>/gi, ' ');
+
+const htmlToText = (str: string): string => {
+  const body = document.createElement('div');
+  body.innerHTML = str;
+  return body.innerText;
+};
 
 const parseEmailFunctions = {
-  [brands.arket]: (body): Item[] => [],
-  [brands.asos]: (body): Item[] => [],
+  [brands.arket]: (body): Item[] => {
+    const items: Item[] = [];
+    let lines = body;
+    lines = lines
+      .substring(
+        lines.indexOf('Total price') + 11,
+        lines.indexOf('Products total')
+      )
+      .split('\n');
+    lines = lines.reduce((lines, line) => {
+      const a = line.replaceAll('|', '').trim();
+      if (a !== '') {
+        lines.push(a);
+      }
+      return lines;
+    }, []);
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index];
+      const test = Number(line);
+      if (!isNaN(test) && test > 100) {
+        items.push({
+          name: lines[index + 1].trim(),
+          size: lines[index + 3].trim(),
+          brand: brands.arket,
+        });
+      }
+    }
+    return items;
+  },
+  [brands.asos]: (body): Item[] => {
+    const items: Item[] = [];
+    const temp = document.createElement('div');
+    temp.innerHTML = body;
+    // const text = temp.innerText;
+    return items;
+  },
   [brands.bershka]: (body): Item[] => {
     const items: Item[] = [];
     let text = htmlToText(body).trim();
@@ -693,7 +733,9 @@ const parseEmailFunctions = {
       body.lastIndexOf('Price') !== -1
         ? body.lastIndexOf('Price') + 5
         : body.indexOf('Product   Information Price') + 27;
-    const text = body.substring(startIndex, body.lastIndexOf('Subtotal'));
+    let text = htmlToText(body);
+
+    text = body.substring(startIndex, body.lastIndexOf('Subtotal'));
     let lines = text.split(/\n/g);
     lines = lines.reduce((lines, line) => {
       if (line.trim() !== '') {
@@ -703,8 +745,6 @@ const parseEmailFunctions = {
     }, []);
 
     const itemBlocks = [];
-
-    console.log(lines);
 
     // while (lines.length) {
     //   console.log(lines);

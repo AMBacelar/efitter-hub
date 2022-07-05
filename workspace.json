@@ -3,7 +3,6 @@
   "version": 2,
   "projects": {
     "gmail": "libs/gmail",
-    "simple-scraper": "apps/simple-scraper",
-    "simple-scraper-e2e": "apps/simple-scraper-e2e"
+    "simple-scraper": "apps/simple-scraper"
   }
 }

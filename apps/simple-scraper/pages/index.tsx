@@ -157,6 +157,7 @@ export function Index() {
 
   const handleSearch = async () => {
     const messageList = await getMessages();
+
     const results = [];
     for (const message of messageList) {
       const _message = fetch(
@@ -171,10 +172,12 @@ export function Index() {
       results.push(_message);
     }
     const final = [];
-    const result = await Promise.all(results);
+    const result = await Promise.allSettled(results);
     for (let index = 0; index < result.length; index++) {
       const singleResult = result[index];
-      final.push(await singleResult.json());
+      if (singleResult.status === 'fulfilled') {
+        final.push(await singleResult.value.json());
+      }
     }
     setMessages(final);
     return;
@@ -239,9 +242,9 @@ export function Index() {
     const temp = document.createElement('div');
     temp.innerHTML = data;
     let sanitized = temp.textContent || temp.innerText;
-    const index = sanitized.indexOf('}}') + 2;
+    const index = sanitized.indexOf('}}');
     if (index !== -1) {
-      sanitized = sanitized.slice(index);
+      sanitized = sanitized.slice(index + 2);
     }
     setCurrentMessageBody(sanitized);
     setIsModalOpen(true);
