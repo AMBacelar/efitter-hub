@@ -773,45 +773,65 @@ const parseEmailFunctions = {
       formattedLines.lastIndexOf('DELIVERY ADDRESS:') + 17,
       formattedLines.lastIndexOf('PRODUCT TOTAL')
     );
-    let lines = formattedLines.split(/\n/g).reduce((lines, line) => {
+    const lines = formattedLines.split(/\n/g).reduce((lines, line) => {
+      if (line.replace('>', '').trim() !== '') {
+        lines.push(line.replace('>', '').trim());
+      }
+      return lines;
+    }, []);
+
+    console.log('$$', lines);
+
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index];
+      if (getCategory(line)) {
+        const name = line;
+        let size = lines[index + 2];
+
+        if (size.includes(' ')) {
+          size = size.split(' ')[0];
+        } else if (size.includes('\t')) {
+          size = size.replace('\t\t', '\t').split('\t')[0];
+        }
+
+        items.push({
+          name,
+          size,
+          brand: brands.pullBear,
+        });
+      }
+    }
+
+    return items;
+  },
+  [brands.riverIsland]: (body): Item[] => {
+    const items: Item[] = [];
+    let formattedLines = htmlToText(body).replace(/\[(.*?)\]/gi, ' ');
+    formattedLines = formattedLines.substring(
+      formattedLines.indexOf('Your items in this order') + 24,
+      formattedLines.indexOf('Subtotal')
+    );
+    const lines = formattedLines.split(/\n/g).reduce((lines, line) => {
       if (line.trim() !== '') {
         lines.push(line.trim());
       }
       return lines;
     }, []);
 
-    const startIndex = lines.findIndex((line) => getCategory(line));
-    lines = lines.filter((_, index) => index >= startIndex);
-    // chunk into 5's
-    const itemBlocks = [];
-    while (lines.length) {
-      itemBlocks.push(lines.splice(0, 5));
-    }
-
-    itemBlocks.forEach((itemBlock) => {
-      const name = itemBlock[0];
-      let size = null;
-
-      const legalSizes = getLegalSizes(brands.pullBear);
-
-      // get size
-
-      for (let index = 0; index < itemBlock.length; index++) {
-        const potentialSize = itemBlock[index];
-        const i = legalSizes.findIndex(
-          (legalSize) => legalSize === potentialSize
-        );
-        if (i !== -1) {
-          size = potentialSize;
-        }
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index];
+      if (line.includes('Size:')) {
+        items.push({
+          name: lines[index - 2].trim(),
+          size: line
+            .replace('Size:', '')
+            .replace('(UK)', '')
+            .replace('(EU)', '')
+            .trim(),
+          brand: brands.riverIsland,
+        });
       }
-
-      items.push({
-        name,
-        size,
-        brand: brands.pullBear,
-      });
-    });
+    }
 
     return items;
   },
@@ -913,6 +933,34 @@ const parseEmailFunctions = {
         brand: brands.uniqlo,
       });
     });
+
+    return items;
+  },
+  [brands.weekday]: (body): Item[] => {
+    const items: Item[] = [];
+    const text = htmlToText(body);
+
+    let lines = text
+      .substring(text.indexOf('Total price') + 11, text.indexOf('Subtotal'))
+      .split('\n');
+    lines = lines.reduce((lines, line) => {
+      const a = line.trim();
+      if (a !== '') {
+        lines.push(a);
+      }
+      return lines;
+    }, []);
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index];
+      const test = Number(line);
+      if (!isNaN(test) && test > 100) {
+        items.push({
+          name: lines[index + 1].trim(),
+          size: lines[index + 2].trim(),
+          brand: brands.weekday,
+        });
+      }
+    }
 
     return items;
   },
@@ -1023,6 +1071,14 @@ const findBrandName = (messageBody: string, subject: string) => {
     ) {
       // Arket
       return brands.arket;
+    } else if (messageBody.toLowerCase().includes('river island')) {
+      // River Island
+      return brands.riverIsland;
+    } else if (
+      messageBody.toLowerCase().includes('thank you for shopping at weekday')
+    ) {
+      // Weekday
+      return brands.weekday;
     } else {
       //H&M
       return brands.hm;

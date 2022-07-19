@@ -16,8 +16,10 @@ export const brands = {
   otherStories: 'OtherStories',
   plt: 'PrettyLittleThing',
   pullBear: 'Pull&Bear',
+  riverIsland: 'River Island',
   stradivarius: 'Stradivarius',
   uniqlo: 'Uniqlo',
+  weekday: 'Weekday',
   zara: 'Zara',
 } as const;
 type BrandKey = keyof typeof brands;
