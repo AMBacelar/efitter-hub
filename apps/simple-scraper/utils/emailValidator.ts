@@ -471,41 +471,37 @@ const parseEmailFunctions = {
     const items: Item[] = [];
     let text;
     text = htmlToText(body).trim();
-    text = text.substring(
-      text.lastIndexOf('Order details') + 13,
-      text.lastIndexOf('Payment details')
-    );
+    text = text
+      .substring(
+        text.lastIndexOf('Order details') + 13,
+        text.lastIndexOf('Payment details')
+      )
+      .replace(/>/g, '')
+      .replace(/\*/g, '');
 
     let lines = [];
     const formattedLines = text.split(/\n/g);
     lines = formattedLines.reduce((lines, line) => {
-      if (line.trim() !== '') {
+      if (line.trim() !== '' && !line.includes('[')) {
         lines.push(line.trim());
       }
       return lines;
     }, []);
 
-    const itemBlocks = [];
+    console.log('$$ M&S ', lines);
 
     for (let index = 0; index < lines.length; index++) {
       const line = lines[index];
       if (line.includes('Size:')) {
         // we found the size
-        const name = lines[index - 2]?.replace(/\*/gi, '').trim() || '';
-        itemBlocks.push({
+        const name = lines[index - 2].trim() || '';
+        items.push({
           name,
-          size: line.substring(line.indexOf(':') + 1).trim(),
+          size: line.split(':')[1].trim(),
+          brand: brands.ms,
         });
       }
     }
-
-    itemBlocks.forEach(({ name, size }) => {
-      items.push({
-        name,
-        size,
-        brand: brands.ms,
-      });
-    });
 
     return items;
   },
