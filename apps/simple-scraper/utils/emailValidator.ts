@@ -18,6 +18,7 @@ const htmlToText = (str: string): string => {
 
 const parseEmailFunctions = {
   [brands.arket]: (body): Item[] => {
+    console.log('$$ Arket 1', body);
     const items: Item[] = [];
     let lines = body;
     lines = lines
@@ -26,6 +27,7 @@ const parseEmailFunctions = {
         lines.indexOf('Products total')
       )
       .split('\n');
+    console.log('$$ Arket 2', lines);
     lines = lines.reduce((lines, line) => {
       const a = line.replaceAll('|', '').trim();
       if (a !== '') {
@@ -729,6 +731,7 @@ const parseEmailFunctions = {
   },
   [brands.riverIsland]: (body): Item[] => {
     const items: Item[] = [];
+    console.log('$$ River Island 1', body);
     let formattedLines = htmlToText(body).replace(/\[(.*?)\]/gi, ' ');
     formattedLines = formattedLines.substring(
       formattedLines.indexOf('Your items in this order') + 24,
@@ -740,6 +743,7 @@ const parseEmailFunctions = {
       }
       return lines;
     }, []);
+    console.log('$$ River Island 2', lines);
 
     for (let index = 0; index < lines.length; index++) {
       const line = lines[index];
