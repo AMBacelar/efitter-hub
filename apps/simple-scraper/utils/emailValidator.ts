@@ -72,8 +72,6 @@ const parseEmailFunctions = {
       return lines;
     }, []);
 
-    console.log('$$', lines);
-
     for (let index = 0; index < lines.length; index++) {
       const line = lines[index];
       if (getCategory(line)) {
@@ -259,61 +257,30 @@ const parseEmailFunctions = {
   },
   [brands.iSawItFirst]: (body): Item[] => {
     const items: Item[] = [];
-    let formattedLines = body.replace(/<\/?[^>]+>/gi, ' ').trim();
-    formattedLines = formattedLines.substring(
-      formattedLines.lastIndexOf('ORDER DETAILS' + 13),
-      formattedLines.lastIndexOf('Subtotal')
-    );
+    let text = htmlToText(body).trim();
+    text = text.substring(0, text.lastIndexOf('Subtotal'));
 
-    formattedLines = formattedLines.split('Quantity:');
-
-    formattedLines.forEach((itemBlock) => {
-      let name = null;
-      let size = null;
-      let lines = itemBlock.split(/\n/g);
-      lines = lines.reduce((lines, line) => {
-        if (line.trim() !== '') {
-          lines.push(line.trim());
-        }
-        return lines;
-      }, []);
-
-      // get name
-
-      for (let index = 0; index < lines.length; index++) {
-        const potentialItemName = lines[index];
-        for (const category in categories) {
-          if (Object.hasOwnProperty.call(categories, category)) {
-            const clothingCategory = categories[category];
-            for (const keyword in clothingCategory.keywords) {
-              if (
-                Object.hasOwnProperty.call(clothingCategory.keywords, keyword)
-              ) {
-                const key = clothingCategory.keywords[keyword];
-                if (
-                  potentialItemName.toLowerCase().includes(key.toLowerCase())
-                ) {
-                  name = potentialItemName;
-                }
-              }
-            }
-          }
-        }
+    let lines = text.split('\n');
+    lines = lines.reduce((lines, line) => {
+      if (line.trim() !== '') {
+        lines.push(line.trim());
       }
+      return lines;
+    }, []);
 
-      // get size
-      size = lines.filter((line) => line.includes('Size:'));
-      if (size.length > 0) {
-        size = size[0].replace('Size:', '').trim();
-      } else {
-        size = null;
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index];
+      if (getCategory(line)) {
+        const name = line;
+        const size = lines[index + 3];
+
+        items.push({
+          name,
+          size,
+          brand: brands.iSawItFirst,
+        });
       }
-      items.push({
-        name,
-        size,
-        brand: brands.iSawItFirst,
-      });
-    });
+    }
 
     return items;
   },
@@ -551,7 +518,8 @@ const parseEmailFunctions = {
     );
     const formattedLines = text.split('Quantity:');
 
-    formattedLines.forEach((itemBlock) => {
+    formattedLines.forEach((itemBlock, i) => {
+      if (i === formattedLines.length - 1) return;
       let name = null;
       let size = null;
       let lines = itemBlock.split(/\n/g);
@@ -699,13 +667,11 @@ const parseEmailFunctions = {
   },
   [brands.plt]: (body): Item[] => {
     const items: Item[] = [];
-    const startIndex =
-      body.lastIndexOf('Price') !== -1
-        ? body.lastIndexOf('Price') + 5
-        : body.indexOf('Product   Information Price') + 27;
     let text = htmlToText(body);
-
-    text = body.substring(startIndex, body.lastIndexOf('Subtotal'));
+    text = text.substring(
+      text.indexOf('ORDER CONFIRMATION') + 18,
+      text.indexOf('Subtotal')
+    );
     let lines = text.split(/\n/g);
     lines = lines.reduce((lines, line) => {
       if (line.trim() !== '') {
@@ -714,20 +680,18 @@ const parseEmailFunctions = {
       return lines;
     }, []);
 
-    const itemBlocks = [];
-
-    itemBlocks.forEach((itemBlock) => {
-      let size;
-      if (itemBlock[1].includes('Size: ')) {
-        size = itemBlock[1].replace(/Size: /, '').trim();
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index];
+      if (line.includes('Size:')) {
+        const name = lines[index - 1];
+        const size = line.replace(/Size: /, '').trim();
+        items.push({
+          name,
+          size,
+          brand: brands.plt,
+        });
       }
-      const name = itemBlock[0];
-      items.push({
-        name,
-        size,
-        brand: brands.plt,
-      });
-    });
+    }
 
     return items;
   },
@@ -849,7 +813,8 @@ const parseEmailFunctions = {
 
     const formattedLines = text.split('Item No:');
 
-    formattedLines.forEach((itemBlock) => {
+    formattedLines.forEach((itemBlock, i) => {
+      if (i === formattedLines.length - 1) return;
       let name = null;
       let size = null;
       let lines = itemBlock.split(/\n/g);
