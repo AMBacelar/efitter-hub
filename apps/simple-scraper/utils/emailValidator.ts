@@ -56,67 +56,37 @@ const parseEmailFunctions = {
   [brands.bershka]: (body): Item[] => {
     const items: Item[] = [];
     let text = htmlToText(body).trim();
-    text = text.substring(
-      text.lastIndexOf('Purchase summary') + 16,
-      text.lastIndexOf('Total item price')
-    );
+    text = text
+      .substring(
+        text.lastIndexOf('Purchase summary') + 16,
+        text.lastIndexOf('Total item price')
+      )
+      .replace(/>/gi, '')
+      .replace(/\*/gi, '');
 
-    const formattedLines = text.split('£');
-
-    formattedLines.forEach((itemBlock) => {
-      let name = null;
-      let size = null;
-      let lines = itemBlock.split(/\n/g);
-      lines = lines.reduce((lines, line) => {
-        if (line.trim() !== '') {
-          lines.push(line.trim());
-        }
-        return lines;
-      }, []);
-
-      // get name
-
-      for (let index = 0; index < lines.length; index++) {
-        const potentialItemName = lines[index];
-        for (const category in categories) {
-          if (Object.hasOwnProperty.call(categories, category)) {
-            const clothingCategory = categories[category];
-            for (const keyword in clothingCategory.keywords) {
-              if (
-                Object.hasOwnProperty.call(clothingCategory.keywords, keyword)
-              ) {
-                const key = clothingCategory.keywords[keyword];
-                if (
-                  potentialItemName.toLowerCase().includes(key.toLowerCase())
-                ) {
-                  name = potentialItemName;
-                }
-              }
-            }
-          }
-        }
+    let lines = text.split('\n');
+    lines = lines.reduce((lines, line) => {
+      if (line.trim() !== '' && !line.includes('[')) {
+        lines.push(line.trim());
       }
+      return lines;
+    }, []);
 
-      const legalSizes = getLegalSizes(brands.bershka);
+    console.log('$$', lines);
 
-      // get size
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index];
+      if (getCategory(line)) {
+        const name = line;
+        const size = lines[index + 3];
 
-      for (let index = 0; index < lines.length; index++) {
-        const potentialSize = lines[index];
-        const i = legalSizes.findIndex(
-          (legalSize) => legalSize === potentialSize
-        );
-        if (i !== -1) {
-          size = potentialSize;
-        }
+        items.push({
+          name,
+          size,
+          brand: brands.bershka,
+        });
       }
-
-      items.push({
-        name,
-        size,
-        brand: brands.bershka,
-      });
-    });
+    }
 
     return items;
   },
@@ -746,11 +716,6 @@ const parseEmailFunctions = {
 
     const itemBlocks = [];
 
-    // while (lines.length) {
-    //   console.log(lines);
-    //   itemBlocks.push(lines.slice(0, 5));
-    // }
-
     itemBlocks.forEach((itemBlock) => {
       let size;
       if (itemBlock[1].includes('Size: ')) {
@@ -779,8 +744,6 @@ const parseEmailFunctions = {
       }
       return lines;
     }, []);
-
-    console.log('$$', lines);
 
     for (let index = 0; index < lines.length; index++) {
       const line = lines[index];
