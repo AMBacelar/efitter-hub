@@ -55,7 +55,7 @@ const ItemInfo = ({
     return (
       <Segment color={isErrorPresent ? 'red' : 'green'} key={i}>
         <div className={!validName && styles['error-message']}>{`${name} ${
-          category && `[${category}]`
+          category ? `[${category}]` : `[unsupported category]`
         }`}</div>
         <div className={brand ? '' : styles['error-message']}>{brand}</div>
         <div className={sizeError && styles['error-message']}>
@@ -141,7 +141,7 @@ export function Index() {
   const [messages, setMessages] = useState([]);
   const [maxWidth, setMaxWidth] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentMessageBody, setCurrentMessageBody] = useState();
+  const [currentMessageBody, setCurrentMessageBody] = useState('');
 
   useEffect(() => {
     loadScript('https://apis.google.com/js/api.js', 'api', () => gapiLoaded());
@@ -339,7 +339,7 @@ export function Index() {
         onRequestClose={() => setIsModalOpen(false)}
       >
         <h2>Modal Content</h2>
-        <p>{currentMessageBody}</p>
+        <div dangerouslySetInnerHTML={{ __html: currentMessageBody }} />
       </ReactModal>
     </Container>
   );
