@@ -740,6 +740,7 @@ const parseEmailFunctions = {
     const items: Item[] = [];
     console.log('$$ River Island 1', body);
     let formattedLines = htmlToText(body).replace(/\[(.*?)\]/gi, ' ');
+    console.log('$$ River Island 1.5', formattedLines);
     formattedLines = formattedLines.substring(
       formattedLines.indexOf('Your items in this order') + 24,
       formattedLines.indexOf('Subtotal')
