@@ -18,7 +18,6 @@ const htmlToText = (str: string): string => {
 
 const parseEmailFunctions = {
   [brands.arket]: (body): Item[] => {
-    console.log('$$ Arket 1', body);
     const text = htmlToText(body);
     const items: Item[] = [];
     let lines = text
@@ -27,7 +26,6 @@ const parseEmailFunctions = {
         text.indexOf('Products total')
       )
       .split('\n');
-    console.log('$$ Arket 2', lines);
     lines = lines.reduce((lines, line) => {
       const a = line.replace(/|/gi, '').trim();
       if (a !== '') {
@@ -35,13 +33,22 @@ const parseEmailFunctions = {
       }
       return lines;
     }, []);
+
     for (let index = 0; index < lines.length; index++) {
       const line = lines[index];
       const test = Number(line);
+
+      const getSize = () => {
+        if (!body.includes('<td>')) return lines[index + 3].trim();
+        const line = lines[index + 2].trim();
+        const parts = line.split(' ');
+        return parts[parts.length - 1].trim();
+      };
+
       if (!isNaN(test) && test > 100) {
         items.push({
           name: lines[index + 1].trim(),
-          size: lines[index + 3].trim(),
+          size: getSize(),
           brand: brands.arket,
         });
       }
