@@ -19,17 +19,17 @@ const htmlToText = (str: string): string => {
 const parseEmailFunctions = {
   [brands.arket]: (body): Item[] => {
     console.log('$$ Arket 1', body);
+    const text = htmlToText(body);
     const items: Item[] = [];
-    let lines = body;
-    lines = lines
+    let lines = text
       .substring(
-        lines.indexOf('Total price') + 11,
-        lines.indexOf('Products total')
+        text.indexOf('Total price') + 11,
+        text.indexOf('Products total')
       )
       .split('\n');
     console.log('$$ Arket 2', lines);
     lines = lines.reduce((lines, line) => {
-      const a = line.replaceAll('|', '').trim();
+      const a = line.replace(/|/gi, '').trim();
       if (a !== '') {
         lines.push(a);
       }
