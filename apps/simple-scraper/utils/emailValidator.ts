@@ -57,9 +57,48 @@ const parseEmailFunctions = {
   },
   [brands.asos]: (body): Item[] => {
     const items: Item[] = [];
-    const temp = document.createElement('div');
-    temp.innerHTML = body;
-    // const text = temp.innerText;
+    if (!body.includes('asos')) return [];
+    let text = htmlToText(body);
+    text = text.substring(
+      text.indexOf('Your order'),
+      text.indexOf('Sub-total')
+    );
+    let lines = text.split('\n');
+    lines = lines.reduce((lines, line) => {
+      if (line.trim() !== '' && !line.includes('[')) {
+        lines.push(line.trim());
+      }
+      return lines;
+    }, []);
+
+    if (lines.length === 1) {
+      lines = text.split('  ').reduce((lines, line) => {
+        if (line.trim() !== '' && !line.includes('[')) {
+          lines.push(line.trim());
+        }
+        return lines;
+      }, []);
+    }
+
+    if (lines.length > 1) {
+      for (let index = 0; index < lines.length; index++) {
+        const line = lines[index];
+        if (getCategory(line)) {
+          const name = line;
+          const size = lines[index + 2].split('/')[1].trim();
+          items.push({
+            name,
+            size,
+            brand: brands.asos,
+          });
+        }
+      }
+    } else {
+      // let's bebug this last branch
+      console.log('$$ 2 probably not going to like this one', text.split(' '));
+    }
+    console.log('$$ 3', items);
+
     return items;
   },
   [brands.bershka]: (body): Item[] => {
@@ -497,8 +536,6 @@ const parseEmailFunctions = {
       return lines;
     }, []);
 
-    console.log('$$ M&S ', lines);
-
     for (let index = 0; index < lines.length; index++) {
       const line = lines[index];
       if (line.includes('Size:')) {
@@ -738,9 +775,7 @@ const parseEmailFunctions = {
   },
   [brands.riverIsland]: (body): Item[] => {
     const items: Item[] = [];
-    console.log('$$ River Island 1', body);
     let formattedLines = htmlToText(body).replace(/\[(.*?)\]/gi, ' ');
-    console.log('$$ River Island 1.5', formattedLines);
     formattedLines = formattedLines.substring(
       formattedLines.indexOf('Your items in this order') + 24,
       formattedLines.indexOf('Subtotal')
@@ -751,7 +786,6 @@ const parseEmailFunctions = {
       }
       return lines;
     }, []);
-    console.log('$$ River Island 2', lines);
 
     for (let index = 0; index < lines.length; index++) {
       const line = lines[index];
