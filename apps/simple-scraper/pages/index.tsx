@@ -198,9 +198,9 @@ export function Index() {
         houseOfCB: 'HouseofCB.com Order',
         ms: 'Thanks for shopping with us',
       };
-      const search = `subject:${Object.keys(subjects)
-        .map((key) => `(${subjects[key]})`)
-        .join(' OR ')}`;
+      const search = `${Object.keys(subjects)
+        .map((key) => `subject:"${subjects[key]}"`)
+        .join(' ')}`;
 
       let result = [];
       let nextPageToken;
@@ -211,7 +211,9 @@ export function Index() {
           tokenPageParam = '&pageToken=' + nextPageToken;
         }
         const resp = await fetch(
-          `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=500&includeSpamTrash=false${tokenPageParam}&q=${search}`,
+          `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=500&includeSpamTrash=false${tokenPageParam}&q={${search}} after: ${new Date(
+            new Date().setFullYear(new Date().getFullYear() - 1)
+          ).toLocaleDateString()}`,
           {
             method: 'GET',
             headers: {
