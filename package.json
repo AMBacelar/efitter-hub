@@ -9,7 +9,6 @@
   },
   "private": true,
   "dependencies": {
-    "@nrwl/node": "^14.2.1",
     "axios": "^0.27.2",
     "core-js": "^3.6.5",
     "fs": "^0.0.1-security",
@@ -35,6 +34,7 @@
     "@nrwl/jest": "14.2.1",
     "@nrwl/linter": "14.2.1",
     "@nrwl/next": "^14.2.1",
+    "@nrwl/node": "14.2.4",
     "@nrwl/react": "14.2.1",
     "@nrwl/web": "14.2.1",
     "@nrwl/workspace": "14.2.1",

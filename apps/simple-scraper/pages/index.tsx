@@ -9,9 +9,8 @@ import {
 import React, { useEffect, useState } from 'react';
 import ReactModal from 'react-modal';
 import { emailValidator } from '../utils/emailValidator';
-import { BrandValue } from '../utils/brands';
+import { BrandValue, getCategory } from '@efitter-hub/efiter-lib';
 import styles from './index.module.scss';
-import { getCategory } from '../utils/categories';
 
 const loadScript = (url, id, onLoad) => {
   const firstJs = document.getElementsByTagName('script')[0];

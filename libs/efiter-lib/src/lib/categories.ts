@@ -93,7 +93,7 @@ export const categories = [
   },
 ];
 
-export const getCategory = (product_name) => {
+export const getCategory = (product_name: string) => {
   return categories.filter(
     (category) =>
       category.keywords.filter((keyword) =>

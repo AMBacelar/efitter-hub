@@ -1,6 +1,11 @@
-import { BrandValue, brands, findBrand } from './brands';
-import { categories, getCategory } from './categories';
-import { getLegalSizes } from './sizes';
+import {
+  BrandValue,
+  brands,
+  findBrand,
+  categories,
+  getCategory,
+  getLegalSizes,
+} from '@efitter-hub/efiter-lib';
 
 type Item = {
   name: string;

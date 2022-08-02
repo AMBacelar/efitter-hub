@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@efitter-hub/efiter-lib": ["libs/efiter-lib/src/index.ts"],
       "@efitter-hub/gmail": ["libs/gmail/src/index.js"]
     }
   },

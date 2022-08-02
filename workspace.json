@@ -2,6 +2,7 @@
   "$schema": "./node_modules/nx/schemas/workspace-schema.json",
   "version": 2,
   "projects": {
+    "efiter-lib": "libs/efiter-lib",
     "gmail": "libs/gmail",
     "simple-scraper": "apps/simple-scraper"
   }

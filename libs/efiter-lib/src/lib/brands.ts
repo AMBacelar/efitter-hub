@@ -1,8 +1,9 @@
 export const brands = {
-  arket: 'ARKET',
+  arket: 'Arket',
   asos: 'ASOS',
   bershka: 'Bershka',
   boohoo: 'Boohoo',
+  cos: 'COS',
   hm: 'H&M',
   houseOfCB: 'House of CB',
   iSawItFirst: 'I Saw It First',
@@ -12,6 +13,7 @@ export const brands = {
   monki: 'Monki',
   ms: 'M&S',
   nakd: 'NA-KD',
+  newLook: 'New Look',
   next: 'Next',
   otherStories: 'OtherStories',
   plt: 'PrettyLittleThing',
@@ -35,11 +37,12 @@ const validAsosBrands = [
   'Reclaimed Vintage',
   'COLLUSION',
 ];
-export const findBrand = (stringContainingBrand) => {
+export const findBrand = (stringContainingBrand: string) => {
   let itemBrand;
-  const brandList = Object.keys(brands).reduce(function (r, k) {
-    return r.concat(brands[k]);
-  }, []);
+  const brandList: BrandValue[] = (Object.keys(brands) as BrandKey[]).reduce(
+    (r: BrandValue[], key: BrandKey) => r.concat(brands[key]),
+    []
+  );
 
   // asos test
   for (let i = 0; i < validAsosBrands.length; i++) {
@@ -51,7 +54,7 @@ export const findBrand = (stringContainingBrand) => {
   }
 
   for (let i = 0; i < brandList.length; i++) {
-    const viableBrand = brandList[i];
+    const viableBrand: string = brandList[i];
     if (
       stringContainingBrand.toLowerCase().includes(viableBrand.toLowerCase())
     ) {
