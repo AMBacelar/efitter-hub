@@ -1,0 +1,29 @@
+[
+  {
+    "url": "https://www2.hm.com/en_gb/productpage.1057330001.html",
+    "brand": "H&M",
+    "isPageValid": true,
+    "itemName": "Rib-knit dress",
+    "category": "One-pieces",
+    "exampleSize": "XS",
+    "materials": ["Polyamide", "Viscose"]
+  },
+  {
+    "url": "https://www2.hm.com/en_gb/productpage.0975968001.html",
+    "brand": "H&M",
+    "isPageValid": true,
+    "itemName": "Tailored trousers",
+    "category": "Bottoms",
+    "exampleSize": "4",
+    "materials": ["Elastane", "Polyester", "Viscose"]
+  },
+  {
+    "url": "https://www2.hm.com/en_gb/",
+    "brand": "H&M",
+    "isPageValid": false,
+    "itemName": "",
+    "category": "",
+    "exampleSize": "",
+    "materials": []
+  }
+]

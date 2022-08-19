@@ -1,0 +1,20 @@
+[
+  {
+    "url": "https://www.asos.com/asos-petite/asos-design-petite-borg-lined-cotton-jacket-in-stone/prd/201048509",
+    "brand": "ASOS",
+    "isPageValid": true,
+    "itemName": "ASOS DESIGN Petite borg lined cotton jacket in stone",
+    "category": "Outerwear",
+    "exampleSize": "2",
+    "materials": ["Cotton", "Polyester"]
+  },
+  {
+    "url": "https://www.asos.com/women/a-to-z-of-brands/asos-edition/cat/?cid=27673",
+    "brand": "ASOS",
+    "isPageValid": false,
+    "itemName": "",
+    "category": "",
+    "exampleSize": "",
+    "materials": ""
+  }
+]

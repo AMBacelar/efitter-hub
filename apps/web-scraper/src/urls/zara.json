@@ -1,0 +1,29 @@
+[
+  {
+    "url": "https://www.zara.com/uk/en/linen-tunic-dress-p04786081.html",
+    "brand": "Zara",
+    "isPageValid": true,
+    "itemName": "LINEN TUNIC DRESS",
+    "category": "One-pieces",
+    "exampleSize": "XS",
+    "materials": ["Linen"]
+  },
+  {
+    "url": "https://www.zara.com/uk/en/purl-knit-sweater-p06771029.html",
+    "brand": "Zara",
+    "isPageValid": true,
+    "itemName": "PURL-KNIT SWEATER",
+    "category": "Tops",
+    "exampleSize": "S",
+    "materials": ["Acrylic", "Polyester"]
+  },
+  {
+    "url": "https://www.zara.com/uk/en/woman-new-in-l1180.html?v1=2026572",
+    "brand": "Zara",
+    "isPageValid": false,
+    "itemName": "",
+    "category": "",
+    "exampleSize": "",
+    "materials": ""
+  }
+]

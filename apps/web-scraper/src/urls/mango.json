@@ -1,0 +1,38 @@
+[
+  {
+    "url": "https://shop.mango.com/gb/women/dresses-and-jumpsuits-midi/oversized-striped-dress_27014038.html",
+    "brand": "Mango",
+    "isPageValid": true,
+    "itemName": "Oversized striped dress",
+    "category": "One-pieces",
+    "exampleSize": "4",
+    "materials": ["Polyester"]
+  },
+  {
+    "url": "https://shop.mango.com/gb/women/coats-coats/double-breasted-trench_27064010.html",
+    "brand": "Mango",
+    "isPageValid": true,
+    "itemName": "Double breasted trench",
+    "category": "Outerwear",
+    "exampleSize": "XXS",
+    "materials": ["Cotton", "Polyamide", "Polyester", "Viscose"]
+  },
+  {
+    "url": "https://shop.mango.com/gb/women/coats-trench-coats/cotton-classic-trench-coat_27063259.html",
+    "brand": "Mango",
+    "isPageValid": true,
+    "itemName": "Cotton classic trench coat",
+    "category": "Outerwear",
+    "exampleSize": "XXS",
+    "materials": ["Cotton", "Polyester"]
+  },
+  {
+    "url": "https://shop.mango.com/gb/women",
+    "brand": "Mango",
+    "isPageValid": false,
+    "itemName": "",
+    "category": "",
+    "exampleSize": "",
+    "materials": ""
+  }
+]

@@ -26,7 +26,7 @@ export const brands = {
 } as const;
 type BrandKey = keyof typeof brands;
 export type BrandValue = typeof brands[BrandKey];
-const validAsosBrands = [
+export const validAsosBrands = [
   'ASOS',
   'ASOS DESIGN',
   'ASOS EDITION',

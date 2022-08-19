@@ -4,6 +4,50 @@
   "projects": {
     "efiter-lib": "libs/efiter-lib",
     "gmail": "libs/gmail",
-    "simple-scraper": "apps/simple-scraper"
+    "simple-scraper": "apps/simple-scraper",
+    "web-scraper": {
+      "root": "apps/web-scraper",
+      "sourceRoot": "apps/web-scraper/src",
+      "projectType": "application",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/node:webpack",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/apps/web-scraper",
+            "main": "apps/web-scraper/src/main.ts",
+            "tsConfig": "apps/web-scraper/tsconfig.app.json",
+            "assets": ["apps/web-scraper/src/assets"]
+          },
+          "configurations": {
+            "production": {
+              "optimization": true,
+              "extractLicenses": true,
+              "inspect": false,
+              "fileReplacements": [
+                {
+                  "replace": "apps/web-scraper/src/environments/environment.ts",
+                  "with": "apps/web-scraper/src/environments/environment.prod.ts"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "executor": "@nrwl/node:node",
+          "options": {
+            "buildTarget": "web-scraper:build"
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["apps/web-scraper/**/*.ts"]
+          }
+        }
+      },
+      "tags": []
+    }
   }
 }

@@ -1,0 +1,38 @@
+[
+  {
+    "url": "https://www.uniqlo.com/uk/en/product/asymmetric-pleated-skirt-452078.html",
+    "brand": "Uniqlo",
+    "isPageValid": true,
+    "itemName": "Asymmetric Pleated Skirt",
+    "category": "Bottoms",
+    "exampleSize": "XXS",
+    "materials": ["Elastane", "Polyester"]
+  },
+  {
+    "url": "https://www.uniqlo.com/uk/en/product/women-ultra-light-trousers-445237.html",
+    "brand": "Uniqlo",
+    "isPageValid": true,
+    "itemName": "Ultra Light Trousers",
+    "category": "Bottoms",
+    "exampleSize": "24inch",
+    "materials": ["Polyester"]
+  },
+  {
+    "url": "https://www.uniqlo.com/uk/en/product/women-3d-knit-seamless-short-sleeved-polo-jumper-445196.html",
+    "brand": "Uniqlo",
+    "isPageValid": true,
+    "itemName": "3D Knit Seamless Short Sleeved Collared Jumper",
+    "category": "Tops",
+    "exampleSize": "XXS",
+    "materials": ["Acrylic", "Linen", "Lyocell"]
+  },
+  {
+    "url": "https://www.uniqlo.com/uk/en/women",
+    "brand": "Uniqlo",
+    "isPageValid": false,
+    "itemName": "",
+    "category": "",
+    "exampleSize": "",
+    "materials": ""
+  }
+]
