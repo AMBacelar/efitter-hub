@@ -34,5 +34,14 @@
     "category": "",
     "exampleSize": "",
     "materials": ""
+  },
+  {
+    "url": "https://www.uniqlo.com/uk/en/product/stretch-fitted-midi-skirt-455717.html",
+    "brand": "Uniqlo",
+    "isPageValid": true,
+    "itemName": "Stretch Fitted Midi Skirt",
+    "category": "Bottoms",
+    "exampleSize": "XXS",
+    "materials": ["Elastane", "Polyester", "Viscose"]
   }
 ]

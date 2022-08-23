@@ -1,0 +1,20 @@
+[
+  {
+    "url": "https://www.bershka.com/gb/pinstripe-corset-dress-c0p116732312.html?colorId=800",
+    "brand": "Bershka",
+    "isPageValid": true,
+    "itemName": "Pinstripe corset dress",
+    "category": "One-pieces",
+    "exampleSize": "XS",
+    "materials": ["Elastane", "Polyester", "Viscose"]
+  },
+  {
+    "url": "https://www.bershka.com/gb/women/clothes/dresses-c1010193213.html",
+    "brand": "Bershka",
+    "isPageValid": false,
+    "itemName": "",
+    "category": "",
+    "exampleSize": "",
+    "materials": ""
+  }
+]

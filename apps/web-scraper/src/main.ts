@@ -7,8 +7,11 @@ import {
 import { assert } from 'console';
 import * as puppeteer from 'puppeteer';
 import asosUrls from './urls/asos.json';
+import bershkaUrls from './urls/bershka.json';
 import hmUrls from './urls/hm.json';
+import houseofcbUrls from './urls/houseOfCB.json';
 import mangoUrls from './urls/mango.json';
+import stradivariusUrls from './urls/stradivarius.json';
 import uniqloUrls from './urls/uniqlo.json';
 import zaraUrls from './urls/zara.json';
 
@@ -66,19 +69,26 @@ console.log('Hello World!');
     headless: false,
     slowMo: 250,
     devtools: true,
+    defaultViewport: null,
   });
 
-  parseAsos(browser);
+  // parseAsos(browser);
 
-  parseHm(browser);
+  // parseBershka(browser);
 
-  parseMango(browser);
+  // parseHm(browser);
 
-  parseUniqlo(browser);
+  // parseHouseOfCB(browser);
 
-  parseZara(browser);
+  // parseMango(browser);
 
-  newArrivals(browser);
+  parseStradivarius(browser);
+
+  // parseUniqlo(browser);
+
+  // parseZara(browser);
+
+  // newArrivals(browser);
 })();
 
 const parseZara = (browser: puppeteer.Browser) => {
@@ -387,6 +397,199 @@ const parseAsos = (browser: puppeteer.Browser) => {
   });
 };
 
+const parseBershka = (browser: puppeteer.Browser) => {
+  bershkaUrls.forEach(async (item) => {
+    const page = await browser.newPage();
+    await (async () => {
+      console.log('parsing:', item.url);
+      await page.goto(item.url, {
+        waitUntil: 'networkidle0',
+      });
+      await page.waitForTimeout(500);
+      // Check Page
+      await page.exposeFunction('getCategory', getCategory);
+
+      const isPageValid = await page.evaluate((): boolean => {
+        const element = document.querySelector('h1.product-title');
+        if (typeof element != 'undefined' && element != null) {
+          const product_name =
+            document.querySelector('h1.product-title').textContent;
+          const category = (window as any).getCategory(product_name);
+          if (category) {
+            return true;
+          }
+        }
+        return false;
+      });
+      pageValidator(item, isPageValid);
+
+      if (isPageValid) {
+        const { product_name, sizeExample, materials } = await page.evaluate(
+          () => {
+            const product_name = document
+              .querySelector('h1.product-title')
+              .textContent.trim();
+            const sizeExample =
+              document
+                .querySelector('.sizes-list-detail ul li')
+                .textContent.trim() || 'XS';
+            const materials = document.querySelector(
+              '.product-compositions'
+            ).textContent;
+
+            return { product_name, sizeExample, materials };
+          }
+        );
+
+        itemValidator(item, { product_name, sizeExample, materials });
+      }
+      page.close();
+    })();
+  });
+};
+
+const parseHouseOfCB = (browser: puppeteer.Browser) => {
+  houseofcbUrls.forEach(async (item) => {
+    const page = await browser.newPage();
+    await (async () => {
+      console.log('parsing:', item.url);
+      await page.goto(item.url, {
+        waitUntil: 'networkidle0',
+      });
+      await page.waitForTimeout(500);
+      // Check Page
+      await page.exposeFunction('getCategory', getCategory);
+
+      const isPageValid = await page.evaluate((): boolean => {
+        const element = document.querySelector('.product_description_text');
+        const product_name =
+          document.querySelector('h1.main-title')?.textContent || '';
+        const category = (window as any).getCategory(product_name);
+        if (typeof element != 'undefined' && element != null && category) {
+          return true;
+        }
+        return false;
+      });
+      pageValidator(item, isPageValid);
+
+      if (isPageValid) {
+        const { product_name, sizeExample, materials } = await page.evaluate(
+          () => {
+            const product_name =
+              document.querySelector('h1.main-title').textContent;
+
+            const size = document.querySelector(
+              '#product-size ul li a'
+            ).textContent;
+
+            const sizeExample = size.split('-')[0].trim();
+
+            let materials: string;
+
+            document
+              .querySelectorAll('.product_description_text div')
+              .forEach((node, i) => {
+                if (
+                  node.textContent.toLowerCase().includes('materials:') ||
+                  node.textContent.toLowerCase().includes('material:')
+                ) {
+                  materials = document.querySelectorAll(
+                    '.product_description_text div'
+                  )[i].textContent;
+                }
+              });
+
+            return { product_name, sizeExample, materials };
+          }
+        );
+
+        itemValidator(item, { product_name, sizeExample, materials });
+      }
+      page.close();
+    })();
+  });
+};
+
+const parseStradivarius = (browser: puppeteer.Browser) => {
+  stradivariusUrls.forEach(async (item) => {
+    const page = await browser.newPage();
+    await (async () => {
+      console.log('parsing:', item.url);
+      await page.goto(item.url, {
+        waitUntil: 'networkidle0',
+      });
+      await page.waitForTimeout(500);
+      // Check Page
+      await page.exposeFunction('getCategory', getCategory);
+
+      const isPageValid = await page.evaluate(async (): Promise<boolean> => {
+        const element = document.querySelector('h1.product-name-title');
+        if (typeof element !== 'undefined' && element !== null) {
+          const product_name = element.textContent;
+          const category = (window as any).getCategory(product_name);
+          if (category) {
+            return true;
+          }
+        }
+        return false;
+      });
+      pageValidator(item, isPageValid);
+
+      if (isPageValid) {
+        const { product_name, sizeExample, materials } = await page.evaluate(
+          async () => {
+            const elementAppear = (
+              selector: string,
+              cyclesCount?: number
+            ): Promise<Element> => {
+              let cycles = cyclesCount || 0;
+              return new Promise((resolve) => {
+                const id = setInterval(function () {
+                  cycles++;
+                  const element = document.querySelector(selector);
+
+                  if (element || cycles > 100) {
+                    clearInterval(id);
+                    resolve(element);
+                  }
+                }, 100);
+              });
+            };
+            const product_name = document.querySelector(
+              'h1.product-name-title'
+            ).textContent;
+
+            const links = document.querySelectorAll('div.bottom-elements a');
+
+            for (let i = 0; i < links.length; i++) {
+              const link = links[i] as HTMLElement;
+              if (link.innerText.toLowerCase().includes('composition')) {
+                link.click();
+              }
+            }
+
+            await elementAppear('.sidebar-composition-content');
+            const materials = (
+              document.querySelector(
+                '.sidebar-composition-content'
+              ) as HTMLElement
+            ).innerText;
+
+            const sizeExample = document.querySelectorAll(
+              '.data-item-sizes .item-grid-size'
+            )[1].textContent;
+
+            return { product_name, sizeExample, materials };
+          }
+        );
+
+        itemValidator(item, { product_name, sizeExample, materials });
+      }
+      page.close();
+    })();
+  });
+};
+
 const newArrivals = (browser: puppeteer.Browser) => {
   // HM
   (async () => {
@@ -506,6 +709,26 @@ const newArrivals = (browser: puppeteer.Browser) => {
     );
     itemNames = validateItemNames(itemNames);
     if (itemNames.length !== 0) console.log('House of CB list:', itemNames);
+    page.close();
+  })();
+
+  // Bershka
+  (async () => {
+    const brand = 'bershka';
+    const page = await browser.newPage();
+    await page.goto('https://www.bershka.com/gb/women/new-c1010378020.html');
+    let itemNames = await page.evaluate(() => {
+      const result = [];
+      const nodeArray = document.querySelectorAll('.product-text');
+      nodeArray.forEach((node) => result.push((node as HTMLElement).innerText));
+      return result;
+    });
+    assert(
+      itemNames.length > 0,
+      `No items found on ${brand} new arrivals page`
+    );
+    itemNames = validateItemNames(itemNames);
+    if (itemNames.length !== 0) console.log(`${brand} list:`, itemNames);
     page.close();
   })();
 };

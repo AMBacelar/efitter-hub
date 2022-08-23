@@ -1,0 +1,20 @@
+[
+  {
+    "url": "https://www.stradivarius.com/gb/",
+    "brand": "Stradivarius",
+    "isPageValid": false,
+    "itemName": "",
+    "category": "",
+    "exampleSize": "",
+    "materials": ""
+  },
+  {
+    "url": "https://www.stradivarius.com/gb/trousers-with-turndown-waist-l01183217?style=2&colorId=250",
+    "brand": "Stradivarius",
+    "isPageValid": true,
+    "itemName": "Trousers with turn-down waist",
+    "category": "Bottoms",
+    "exampleSize": "6",
+    "materials": ["Cotton", "Elastane", "Polyester", "Viscose"]
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "url": "https://www.houseofcb.com/",
+    "brand": "HouseOfCB",
+    "isPageValid": false,
+    "itemName": "",
+    "category": "",
+    "exampleSize": "",
+    "materials": ""
+  },
+  {
+    "url": "https://www.houseofcb.com/charmaine-forest-corset-maxi-dress.html",
+    "brand": "HouseOfCB",
+    "isPageValid": true,
+    "itemName": "Charmaine Forest Corset Maxi Dress",
+    "category": "One-pieces",
+    "exampleSize": "XS",
+    "materials": ["Satin", "Silk"]
+  }
+]
