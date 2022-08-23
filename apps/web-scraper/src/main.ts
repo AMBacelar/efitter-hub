@@ -72,23 +72,23 @@ console.log('Hello World!');
     defaultViewport: null,
   });
 
-  // parseAsos(browser);
+  parseAsos(browser);
 
-  // parseBershka(browser);
+  parseBershka(browser);
 
-  // parseHm(browser);
+  parseHm(browser);
 
-  // parseHouseOfCB(browser);
+  parseHouseOfCB(browser);
 
-  // parseMango(browser);
+  parseMango(browser);
 
   parseStradivarius(browser);
 
-  // parseUniqlo(browser);
+  parseUniqlo(browser);
 
-  // parseZara(browser);
+  parseZara(browser);
 
-  // newArrivals(browser);
+  newArrivals(browser);
 })();
 
 const parseZara = (browser: puppeteer.Browser) => {
