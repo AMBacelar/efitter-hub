@@ -545,10 +545,19 @@ const parseEmailFunctions = {
       const line = lines[index];
       if (line.includes('Size:')) {
         // we found the size
-        const name = lines[index - 2].trim() || '';
+        let name = (lines[index - 2] || '').replaceAll('*', '').trim();
+        const category = getCategory(name);
+        let size = line.substring(line.indexOf('Size:') + 6).trim();
+        if (!category) {
+          name = lines[index - 1].replaceAll('*', '').trim();
+          size = line
+            .substring(line.indexOf('Size:') + 6)
+            .trim()
+            .split(' ')[0];
+        }
         items.push({
           name,
-          size: line.split(':')[1].trim(),
+          size,
           brand: brands.ms,
         });
       }
@@ -837,7 +846,6 @@ const parseEmailFunctions = {
         const category = getCategory(name);
 
         if (!category) {
-          console.log('no category here');
           name = lines[index - 2].trim();
         }
 
