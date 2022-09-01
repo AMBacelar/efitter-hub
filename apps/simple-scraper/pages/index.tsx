@@ -212,7 +212,11 @@ export function Index() {
         const resp = await fetch(
           `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=500&includeSpamTrash=false${tokenPageParam}&q={${search}} after: ${new Date(
             new Date().setFullYear(new Date().getFullYear() - 1)
-          ).toLocaleDateString()}`,
+          )
+            .toLocaleDateString()
+            .split('/')
+            .reverse()
+            .join('/')}`,
           {
             method: 'GET',
             headers: {
