@@ -833,8 +833,16 @@ const parseEmailFunctions = {
       const line = lines[index];
       if (line.includes(' | ')) {
         // we found the size
+        let name = lines[index - 3].trim();
+        const category = getCategory(name);
+
+        if (!category) {
+          console.log('no category here');
+          name = lines[index - 2].trim();
+        }
+
         itemBlocks.push({
-          name: lines[index - 3].trim(),
+          name,
           size: line.substring(0, line.indexOf('|')).trim(),
         });
       }
